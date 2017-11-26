@@ -7,33 +7,55 @@ calculateModel <- function(factorMerger, factor) {
 }
 
 calculateModel.gaussianFactorMerger <- function(factorMerger, factor) {
-    if (length(unique(factor)) > 1) {
-        return(lm(factorMerger$response ~ factor - 1))
-    }
-    return(lm(factorMerger$response ~ 1))
+  
+  df <- cbind(factor, factorMerger$covariates)
+  df <- as.data.frame(df)
+  colnames(df)[1] <- "factor"
+  df$factor <- factor(df$factor)
+  #df$factor <- factor(df$factor, levels=levels(factor))
+  if (length(unique(factor)) > 1 & length(factorMerger$covariates)==0) {
+    return(lm(factorMerger$response ~ factor - 1, data = df))
+  }
+  if(length(unique(factor)) > 1 & length(factorMerger$covariates)>0){
+    return(lm(factorMerger$response ~ . - 1 , data = df))
+  }
+  return(lm(factorMerger$response ~ 1))
 }
 
 #' @importFrom survival Surv coxph coxph.control
 calculateModel.survivalFactorMerger <- function(factorMerger, factor) {
-    response <- factorMerger$response
-    if (length(unique(factor)) > 1) {
-        return(coxph(response ~ factor))
-    }
-    return(coxph(response ~ 1))
+  response <- factorMerger$response
+  df <- cbind(factor, factorMerger$covariates)
+  df <- as.data.frame(df)
+  colnames(df)[1] <- "factor"
+  df$factor <- factor(df$factor)
+  
+  if(length(unique(factor)) > 1 & length(factorMerger$covariates)==0){
+    return(coxph(response ~ factor))
+  }
+  if (length(unique(factor)) > 1 & length(factorMerger$covariates)>0) {
+    return(coxph(response ~ . , data = df))
+  }
+  return(coxph(response ~ 1))
 }
 
 calculateModel.binomialFactorMerger <- function(factorMerger, factor) {
-    df <- data.frame(response = factorMerger$response,
-                     factor = factor)
-    if (length(unique(factor)) > 1) {
-        mod <- glm(response ~ factor, family = "binomial", data = df)
-
-    } else {
-        mod <- glm(response ~ 1, family = "binomial", data = df)
+  df <- cbind(factor, factorMerger$covariates)
+  df <- as.data.frame(df)
+  colnames(df)[1] <- "factor"
+  df$factor <- factor(df$factor)
+  if (length(unique(factor)) > 1) {
+    if(length(factorMerger$covariates)>0){
+      mod <- glm(factorMerger$response ~ ., family = "binomial", data = df)
+    }else{
+      mod <- glm(factorMerger$response ~ factor, family = "binomial", data = df)
     }
-
-    class(mod) <- c("binomglm", class(mod))
-    return(mod)
+  } else {
+    mod <- glm(response ~ 1, family = "binomial", data = df)
+  }
+  
+  class(mod) <- c("binomglm", class(mod))
+  return(mod)
 }
 
 calculateModelStatistic <- function(model) {
