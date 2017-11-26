@@ -30,7 +30,7 @@ cleanFactor <- function(factor) {
     return(factor)
 }
 
-merger <- function(response, factor, covariates=NULL,
+merger <- function(response, factor, covariates=NULL, weights = NULL,
                    family = "gaussian",
                    abbreviate) {
   
@@ -52,6 +52,7 @@ merger <- function(response, factor, covariates=NULL,
     response = response,
     factor = factor,
     covariates = covariates,
+    weights = weights,
     mergingList = list(`1` = list(groups = levels(factor),
                                   modelStats = list(),
                                   groupStats = NA,
@@ -227,7 +228,8 @@ print.factorMerger <- function(x, ...) {
 #'
 #' @param response A response \code{vector/matrix} suitable for the model family.
 #' @param factor A factor \code{vector}.
-#' @param covariates A covariates \code{vector/matrix}.
+#' @param covariates A covariates \code{vector/matrix}, optional.
+#' @param weights A weights \code{vector}, optional. For more information see: \link[stats]{lm}, \link[stats]{glm}, \link[survival]{coxph}
 #' @param family Model family to be used in merging. Available models are: \code{"gaussian",}
 #' \code{ "survival", "binomial"}.
 #' By default \code{mergeFactors} uses \code{"gaussian"} model.
@@ -280,7 +282,7 @@ print.factorMerger <- function(x, ...) {
 #'
 #' @export
 #'
-mergeFactors <- function(response, factor, covariates=NULL,
+mergeFactors <- function(response, factor, covariates=NULL, weights = NULL,
                          family = "gaussian",
                          method = "fast-adaptive",
                          abbreviate = TRUE) {
@@ -295,7 +297,7 @@ mergeFactors <- function(response, factor, covariates=NULL,
     response <- as.matrix(response)
   }
   
-  fm <- merger(response, factor, covariates, family, abbreviate)
+  fm <- merger(response, factor, covariates, weights, family, abbreviate)
   
   if (grepl("adaptive", method)) {
     return(mergeLRT(fm, successive))

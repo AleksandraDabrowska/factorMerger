@@ -4,15 +4,17 @@
 \alias{mergeFactors}
 \title{Merge factors}
 \usage{
-mergeFactors(response, factor, covariates = NULL, family = "gaussian",
-  method = "fast-adaptive", abbreviate = TRUE)
+mergeFactors(response, factor, covariates = NULL, weights = NULL,
+  family = "gaussian", method = "fast-adaptive", abbreviate = TRUE)
 }
 \arguments{
 \item{response}{A response \code{vector/matrix} suitable for the model family.}
 
 \item{factor}{A factor \code{vector}.}
 
-\item{covariates}{A covariates \code{vector/matrix}.}
+\item{covariates}{A covariates \code{vector/matrix}, optional.}
+
+\item{weights}{A weights \code{vector}, optional. For more information see: \link[stats]{lm}, \link[stats]{glm}, \link[survival]{coxph}}
 
 \item{family}{Model family to be used in merging. Available models are: \code{"gaussian",}
 \code{ "survival", "binomial"}.
