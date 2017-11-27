@@ -74,7 +74,7 @@ merger <- function(response, factor, covariates=NULL, weights = NULL,
          
          "survival" = {
            stopifnot(class(response) == "Surv")
-           class(fm) <- append(class(fm), "survival FactorMerger")
+           class(fm) <- append(class(fm), "survivalFactorMerger")
          },
          
          "binomial" = {

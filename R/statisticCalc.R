@@ -75,7 +75,7 @@ calculateModel.binomialFactorMerger <- function(factorMerger, factor) {
         mod <- glm(factorMerger$response ~ factor, family = "binomial", data = df)
       }
     } else {
-      mod <- glm(response ~ 1, family = "binomial", data = df)
+      mod <- glm(factorMerger$response ~ 1, family = "binomial", data = df)
     }
   
     class(mod) <- c("binomglm", class(mod))
@@ -88,7 +88,7 @@ calculateModel.binomialFactorMerger <- function(factorMerger, factor) {
         mod <- glm(factorMerger$response ~ factor, family = "binomial", data = df, weights = factorMerger$weights)
       }
     } else {
-      mod <- glm(response ~ 1, family = "binomial", data = df, weights = factorMerger$weights)
+      mod <- glm(factorMerger$response ~ 1, family = "binomial", data = df, weights = factorMerger$weights)
     }
     
     class(mod) <- c("binomglm", class(mod))

@@ -22,6 +22,7 @@ library(survival)
 if (!require("forcats")) {
     install.packages("forcats")
 }
+
 library(forcats)
 
 ```
