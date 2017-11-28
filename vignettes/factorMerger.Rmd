@@ -184,8 +184,8 @@ table(binomRandSample$response, binomRandSample$factor) %>%
 ```
 
 ```{r}
-binomFm <- mergeFactors(binomRandSample$response, 
-                        binomRandSample$factor, 
+binomFm <- mergeFactors(response = binomRandSample$response, 
+                        factor = binomRandSample$factor, 
                         family = "binomial", 
                         method = "fast-adaptive")
 mergingHistory(binomFm, showStats = TRUE) %>% 
