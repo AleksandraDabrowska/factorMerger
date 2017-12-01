@@ -305,7 +305,7 @@ cutTree <- function(factorMerger,
     stopifnot(!is.null(value) | stat == "GIC")
     stopifnot(stat != "GIC" | value > 0)
     mH <- mergingHistory(factorMerger, T)
-    stopifnot(stat %in% c("loglikelihood", "p-value", "GIC"))
+    stopifnot(stat %in% c("loglikelihood", "pvalue", "GIC"))
     if (stat == "GIC") {
         mH$GIC <- -2 * mH$model + as.numeric(value) * nrow(mH):1
         value <- min(mH$GIC)

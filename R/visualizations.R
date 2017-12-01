@@ -883,7 +883,7 @@ plotGIC <- function(factorMerger, color, penalty = 2, statistic) {
                        vjust = vjust, label = text)) +
         ylab("")
 
-    if (statistic == "p-value") {
+    if (statistic == "pvalue") {
         g <- g + scale_x_log10()
     }
 
