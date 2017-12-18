@@ -2,19 +2,19 @@
 % Please edit documentation in R/factorMergerClasses.R
 \name{mergeFactors}
 \alias{mergeFactors}
+\alias{mergeFactors.default}
 \title{Merge factors}
 \usage{
-mergeFactors(response, factor, covariates = NULL, weights = NULL,
-  family = "gaussian", method = "fast-adaptive", abbreviate = TRUE)
+\method{mergeFactors}{formula}(x, factor, ...)
 }
 \arguments{
-\item{response}{A response \code{vector/matrix} suitable for the model family.}
+\item{x, formula}{A response \code{vector/matrix} suitable for the model family or a formula containing columns names from the \code{data} argument.}
 
-\item{factor}{A factor \code{vector}.}
+\item{factor}{A factor \code{vector} when we use \code{response} argument, otherwise the name of column from \code{data} argument containing which levels should be merged.}
 
-\item{covariates}{A covariates \code{vector/matrix}, optional.}
+\item{covariates}{A covariates \code{vector/matrix}, optional when we use \code{response} argument.}
 
-\item{weights}{A weights \code{vector}, optional. For more information see: \link[stats]{lm}, \link[stats]{glm}, \link[survival]{coxph}}
+\item{weights}{A weights \code{vector}, optional when we use \code{response} argument. For more information see: \link[stats]{lm}, \link[stats]{glm}, \link[survival]{coxph}}
 
 \item{family}{Model family to be used in merging. Available models are: \code{"gaussian",}
 \code{ "survival", "binomial"}.
@@ -68,6 +68,15 @@ Performs step-wise merging of factor levels.
 }
 \examples{
 randSample <- generateMultivariateSample(N = 100, k = 10, d = 3)
-mergeFactors(randSample$response, randSample$factor)
+
+randSample$covariates <- runif(100)
+mergeFactors(x = randSample$response, factor = randSample$factor)
+mergeFactors(x = randSample$response, factor = randSample$factor, covariates = randSample$covariates)
+
+dataset <- cbind(randSample$response, randSample$factor, randSample$covariates)
+colnames(dataset) <- c("res1","res2","res3","fct","cov1")
+
+mergeFactors(x=as.formula("res1+res2+res3~fct"), factor="fct", data=dataset)
+mergeFactors(x=as.formula("res1+res2+res3~fct+cov1"), factor="fct", data=dataset)
 
 }

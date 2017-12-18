@@ -223,13 +223,13 @@ print.factorMerger <- function(x, ...) {
 
 
 #' Merge factors
-#'
+#' 
 #' @description Performs step-wise merging of factor levels.
-#'
-#' @param response A response \code{vector/matrix} suitable for the model family.
-#' @param factor A factor \code{vector}.
-#' @param covariates A covariates \code{vector/matrix}, optional.
-#' @param weights A weights \code{vector}, optional. For more information see: \link[stats]{lm}, \link[stats]{glm}, \link[survival]{coxph}
+#' 
+#' @param x,formula A response \code{vector/matrix} suitable for the model family or a formula containing columns names from the \code{data} argument.
+#' @param factor A factor \code{vector} when we use \code{response} argument, otherwise the name of column from \code{data} argument containing which levels should be merged.
+#' @param covariates A covariates \code{vector/matrix}, optional when we use \code{response} argument.
+#' @param weights A weights \code{vector}, optional when we use \code{response} argument. For more information see: \link[stats]{lm}, \link[stats]{glm}, \link[survival]{coxph}
 #' @param family Model family to be used in merging. Available models are: \code{"gaussian",}
 #' \code{ "survival", "binomial"}.
 #' By default \code{mergeFactors} uses \code{"gaussian"} model.
@@ -276,22 +276,88 @@ print.factorMerger <- function(x, ...) {
 #' @param abbreviate Logical. If \code{TRUE}, the default, factor levels names
 #' are abbreviated.
 #'
+#' @method mergeFactors formula
+#' @method mergeFactors default
+#' 
+#'
 #' @examples
 #' randSample <- generateMultivariateSample(N = 100, k = 10, d = 3)
-#' mergeFactors(randSample$response, randSample$factor)
+#' 
+#' randSample$covariates <- runif(100)
+#' mergeFactors(x = randSample$response, factor = randSample$factor)
+#' mergeFactors(x = randSample$response, factor = randSample$factor, covariates = randSample$covariates)
 #'
-#' @export
+#'dataset <- cbind(randSample$response, randSample$factor, randSample$covariates)
+#'colnames(dataset) <- c("res1","res2","res3","fct","cov1")
 #'
-mergeFactors <- function(response, factor, covariates=NULL, weights = NULL,
+#'mergeFactors(x=as.formula("res1+res2+res3~fct"), factor="fct", data=dataset)
+#'mergeFactors(x=as.formula("res1+res2+res3~fct+cov1"), factor="fct", data=dataset)
+#'
+#'@aliases mergeFactors.default
+#'@aliases mergeFactors.formula
+#'
+#'@export mergeFactors
+
+
+
+mergeFactors <- function(x, factor, ...){
+  UseMethod("mergeFactors",x)
+}
+
+
+#'@export
+mergeFactors.default <- function(x, factor, covariates=NULL, weights = NULL,
                          family = "gaussian",
                          method = "fast-adaptive",
                          abbreviate = TRUE) {
-  
+  response <- x
   stopifnot(!is.null(response), !is.null(factor))
   stopifnot(method %in% c("adaptive", "fast-adaptive",
                           "fixed", "fast-fixed"))
   
   successive  <- ifelse(grepl("fast", method), TRUE, FALSE)
+  
+  if (is.data.frame(response)) {
+    response <- as.matrix(response)
+  }
+  
+  fm <- merger(response, factor, covariates, weights, family, abbreviate)
+  
+  if (grepl("adaptive", method)) {
+    return(mergeLRT(fm, successive))
+  }
+  
+  return(mergeHClust(fm, successive))
+}
+
+#'@export
+#'@aliases rhs,lhs
+mergeFactors.formula <- function(x, factor, data=NULL, weights = NULL,
+                                 family = "gaussian",
+                                 method = "fast-adaptive",
+                                 abbreviate = TRUE) {
+  
+  formula <- x
+  stopifnot(method %in% c("adaptive", "fast-adaptive",
+                          "fixed", "fast-fixed"))
+  
+  successive  <- ifelse(grepl("fast", method), TRUE, FALSE)
+  responseNames <- formula.tools::lhs(formula)
+  responseNames <- unlist(strsplit(formula.tools:::as.character.formula(responseNames)," "))
+  responseNames <- responseNames[!responseNames %in% c("+")]
+  covariateNames <- formula.tools::rhs(formula)
+  covariateNames <- unlist(strsplit(formula.tools:::as.character.formula(covariateNames)," "))
+  covariateNames <- covariateNames[!covariateNames %in% c("+")]
+  factorNames <- factor
+  
+  covariateNames <- covariateNames[!covariateNames %in% factorNames]
+  #opcja na surv jeszcze do rozpatrzenia
+  response <- data[, which(colnames(data) %in% c(responseNames))]
+  stopifnot(!is.null(response), !is.null(factor))
+  
+  covariates <- data[, which(colnames(data) %in% covariateNames)]
+  covariates <- as.data.frame(covariates)
+  factor <- data[, which(colnames(data) %in% factorNames)]
   
   if (is.data.frame(response)) {
     response <- as.matrix(response)
